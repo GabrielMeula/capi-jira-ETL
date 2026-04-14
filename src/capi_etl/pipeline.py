@@ -25,6 +25,7 @@ from capi_etl.transform.commits import transform_commits
 from capi_etl.transform.dim_projeto import transform_dim_projeto
 from capi_etl.transform.dim_tarefa import transform_dim_tarefa
 from capi_etl.transform.issues import transform_issues
+from capi_etl.transform.dim_pull_request import transform_dim_pull_request
 from capi_etl.transform.pulls import transform_pulls
 
 log = logging.getLogger(__name__)
@@ -78,6 +79,7 @@ def run_github(settings: Settings, since_days: int | None) -> None:
 
     all_pulls_rows: list[dict] = []
     all_commits_rows: list[dict] = []
+    all_dim_pr_rows: list[dict] = []
 
     for repo in settings.github_repos:
         log.info("GitHub: processando repo %s", repo)
@@ -86,15 +88,19 @@ def run_github(settings: Settings, since_days: int | None) -> None:
 
         df_pulls = transform_pulls(enriched, repo)
         df_commits = transform_commits(enriched, repo)
+        df_dim_pr = transform_dim_pull_request(enriched, repo)
 
         if not df_pulls.empty:
             all_pulls_rows.extend(_df_to_records(df_pulls))
         if not df_commits.empty:
             all_commits_rows.extend(_df_to_records(df_commits))
+        if not df_dim_pr.empty:
+            all_dim_pr_rows.extend(_df_to_records(df_dim_pr))
 
     with get_connection(settings.database_url) as conn:
         upsert(conn, fato_pull_requests, all_pulls_rows, ["pr_id"])
         upsert(conn, fato_commits, all_commits_rows, ["commit_hash"])
+        upsert(conn, dim_pull_request, all_dim_pr_rows, ["pr_id"])
 
     log.info("=== ETL GitHub — fim ===")
 
