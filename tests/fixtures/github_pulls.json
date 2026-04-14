@@ -2,8 +2,10 @@
   {
     "number": 101,
     "title": "feat: [CAP-1] implement login flow",
+    "state": "closed",
     "user": {"login": "dev-maria"},
     "head": {"ref": "feature/CAP-1-login"},
+    "base": {"ref": "main"},
     "created_at": "2026-01-10T09:00:00Z",
     "merged_at": "2026-01-15T16:00:00Z",
     "updated_at": "2026-01-15T16:00:00Z",
@@ -23,8 +25,10 @@
   {
     "number": 202,
     "title": "chore: update dependencies (no jira key)",
+    "state": "open",
     "user": {"login": "dev-joao"},
     "head": {"ref": "chore/deps-update"},
+    "base": {"ref": "main"},
     "created_at": "2026-02-05T08:00:00Z",
     "merged_at": null,
     "updated_at": "2026-02-05T08:30:00Z",
