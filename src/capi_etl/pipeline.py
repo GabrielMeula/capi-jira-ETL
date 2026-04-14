@@ -76,11 +76,9 @@ def _collect_and_load_dim_user(settings: Settings) -> None:
         ).fetchall()
         github_logins = [r[0] for r in gh_rows]
 
-    log.info("dim_user: %d nomes Jira, %d logins GitHub.", len(jira_names), len(github_logins))
+        log.info("dim_user: %d nomes Jira, %d logins GitHub.", len(jira_names), len(github_logins))
 
-    df_users = build_dim_user(jira_names, github_logins)
-
-    with get_connection(settings.database_url) as conn:
+        df_users = build_dim_user(jira_names, github_logins)
         upsert(conn, dim_user, _df_to_records(df_users), ["user_key"])
 
 
