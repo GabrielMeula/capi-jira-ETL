@@ -1,4 +1,4 @@
-"""DDL das 4 tabelas de fato via SQLAlchemy Core."""
+"""DDL das tabelas de dimensão e fato via SQLAlchemy Core."""
 from __future__ import annotations
 
 from sqlalchemy import (
