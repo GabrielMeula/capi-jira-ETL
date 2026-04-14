@@ -10,6 +10,7 @@ import pandas as pd
 
 log = logging.getLogger(__name__)
 
+# 0.6 empiricamente validado para nomes PT-BR vs logins GitHub estilo "dev-<nome>"
 _THRESHOLD = 0.6
 _NON_ALNUM = re.compile(r"[^a-z0-9]")
 
@@ -42,6 +43,8 @@ def build_dim_user(
     if not jira_names and not github_logins:
         return pd.DataFrame()
 
+    jira_names = list(dict.fromkeys(jira_names))
+
     rows: list[dict[str, Any]] = []
     matched_logins: set[str] = set()
 
@@ -50,6 +53,8 @@ def build_dim_user(
         best_score = 0.0
 
         for login in github_logins:
+            if login in matched_logins:
+                continue
             score = _similarity(jira_name, login)
             if score > best_score:
                 best_score = score
@@ -82,6 +87,9 @@ def build_dim_user(
 
     # Logins GitHub sem par Jira
     for login in github_logins:
+        if not _slug(login):
+            log.warning("Skipping GitHub login with empty slug: %r", login)
+            continue
         if login not in matched_logins:
             rows.append(
                 {

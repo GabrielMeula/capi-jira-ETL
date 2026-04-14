@@ -23,7 +23,7 @@ def test_fuzzy_match_maria():
     df = build_dim_user(["Maria Silva"], ["dev-maria"])
     row = df[df["jira_display_name"] == "Maria Silva"].iloc[0]
     assert row["github_login"] == "dev-maria"
-    assert row["match_method"] in ("exact", "fuzzy")
+    assert row["match_method"] == "fuzzy"
     assert row["match_score"] >= 0.6
 
 
