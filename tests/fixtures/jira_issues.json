@@ -7,7 +7,9 @@
       "created": "2026-01-10T08:00:00.000+0000",
       "resolutiondate": "2026-01-15T17:00:00.000+0000",
       "project": {"name": "Capivara AI", "key": "CAP"},
-      "issuetype": {"name": "Story"}
+      "issuetype": {"name": "Story"},
+      "assignee": {"displayName": "Maria Silva"},
+      "reporter": {"displayName": "João Ferreira"}
     },
     "changelog": {
       "total": 2,
@@ -31,7 +33,9 @@
       "created": "2026-02-01T10:00:00.000+0000",
       "resolutiondate": "2026-02-03T12:00:00.000+0000",
       "project": {"name": "Capi Bugs", "key": "BUG"},
-      "issuetype": {"name": "Bug"}
+      "issuetype": {"name": "Bug"},
+      "assignee": null,
+      "reporter": {"displayName": "Maria Silva"}
     },
     "changelog": {
       "total": 1,
