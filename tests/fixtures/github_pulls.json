@@ -1,0 +1,35 @@
+[
+  {
+    "number": 101,
+    "title": "feat: [CAP-1] implement login flow",
+    "user": {"login": "dev-maria"},
+    "head": {"ref": "feature/CAP-1-login"},
+    "created_at": "2026-01-10T09:00:00Z",
+    "merged_at": "2026-01-15T16:00:00Z",
+    "updated_at": "2026-01-15T16:00:00Z",
+    "_reviews": [{"id": 1, "state": "APPROVED"}, {"id": 2, "state": "CHANGES_REQUESTED"}],
+    "_comments": [{"id": 10}, {"id": 11}],
+    "_commits": [
+      {
+        "sha": "abc123",
+        "commit": {
+          "author": {"name": "Maria", "date": "2026-01-12T10:00:00Z"},
+          "committer": {"name": "Maria", "date": "2026-01-12T10:00:00Z"}
+        },
+        "author": {"login": "dev-maria"}
+      }
+    ]
+  },
+  {
+    "number": 202,
+    "title": "chore: update dependencies (no jira key)",
+    "user": {"login": "dev-joao"},
+    "head": {"ref": "chore/deps-update"},
+    "created_at": "2026-02-05T08:00:00Z",
+    "merged_at": null,
+    "updated_at": "2026-02-05T08:30:00Z",
+    "_reviews": [],
+    "_comments": [],
+    "_commits": []
+  }
+]
