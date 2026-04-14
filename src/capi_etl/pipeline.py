@@ -11,7 +11,9 @@ from capi_etl.extract.github import enrich_pulls, list_pulls
 from capi_etl.load.db import create_all_tables, get_connection
 from capi_etl.load.schema import (
     dim_projeto,
+    dim_pull_request,
     dim_tarefa,
+    dim_user,
     fato_changelog,
     fato_commits,
     fato_issues,

@@ -81,3 +81,23 @@ fato_commits = Table(
     Column("author_name", Text, nullable=True),
     Column("commit_date", TIMESTAMP(timezone=True), nullable=True),
 )
+
+dim_pull_request = Table(
+    "dim_pull_request",
+    metadata,
+    Column("pr_id", Text, primary_key=True),       # "org/repo#123"
+    Column("title", Text, nullable=True),
+    Column("head_branch", Text, nullable=True),
+    Column("base_branch", Text, nullable=True),
+    Column("state", Text, nullable=True),           # "open" | "closed"
+)
+
+dim_user = Table(
+    "dim_user",
+    metadata,
+    Column("user_key", Text, primary_key=True),     # "jira:<slug>" ou "gh:<login>"
+    Column("jira_display_name", Text, nullable=True),
+    Column("github_login", Text, nullable=True),
+    Column("match_score", Numeric, nullable=True),  # 0.0–1.0; None se sem par
+    Column("match_method", Text, nullable=True),    # "exact" | "fuzzy" | "unmatched"
+)
