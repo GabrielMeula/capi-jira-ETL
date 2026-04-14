@@ -23,9 +23,9 @@ from capi_etl.load.upsert import upsert
 from capi_etl.transform.changelog import transform_changelog
 from capi_etl.transform.commits import transform_commits
 from capi_etl.transform.dim_projeto import transform_dim_projeto
+from capi_etl.transform.dim_pull_request import transform_dim_pull_request
 from capi_etl.transform.dim_tarefa import transform_dim_tarefa
 from capi_etl.transform.issues import transform_issues
-from capi_etl.transform.dim_pull_request import transform_dim_pull_request
 from capi_etl.transform.pulls import transform_pulls
 
 log = logging.getLogger(__name__)
