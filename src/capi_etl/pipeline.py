@@ -11,7 +11,9 @@ from capi_etl.extract.github import enrich_pulls, list_pulls
 from capi_etl.load.db import create_all_tables, get_connection
 from capi_etl.load.schema import (
     dim_projeto,
+    dim_pull_request,
     dim_tarefa,
+    dim_user,
     fato_changelog,
     fato_commits,
     fato_issues,
@@ -21,9 +23,12 @@ from capi_etl.load.upsert import upsert
 from capi_etl.transform.changelog import transform_changelog
 from capi_etl.transform.commits import transform_commits
 from capi_etl.transform.dim_projeto import transform_dim_projeto
+from capi_etl.transform.dim_pull_request import transform_dim_pull_request
 from capi_etl.transform.dim_tarefa import transform_dim_tarefa
+from capi_etl.transform.dim_user import build_dim_user
 from capi_etl.transform.issues import transform_issues
 from capi_etl.transform.pulls import transform_pulls
+from sqlalchemy import text
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +47,39 @@ def _df_to_records(df: pd.DataFrame) -> list[dict]:
         {k: _clean(v) for k, v in row.items()}
         for row in df.to_dict(orient="records")
     ]
+
+
+def _collect_and_load_dim_user(settings: Settings) -> None:
+    """Coleta nomes únicos do banco, executa matching e carrega dim_user."""
+    with get_connection(settings.database_url) as conn:
+        # Nomes Jira: assignee e reporter de dim_tarefa
+        jira_rows = conn.execute(
+            text(
+                "SELECT DISTINCT name FROM ("
+                "  SELECT assignee_name AS name FROM dim_tarefa WHERE assignee_name IS NOT NULL"
+                "  UNION"
+                "  SELECT reporter_name AS name FROM dim_tarefa WHERE reporter_name IS NOT NULL"
+                ") AS t"
+            )
+        ).fetchall()
+        jira_names = [r[0] for r in jira_rows]
+
+        # Logins GitHub: autor de PRs e commits
+        gh_rows = conn.execute(
+            text(
+                "SELECT DISTINCT login FROM ("
+                "  SELECT author_name AS login FROM fato_pull_requests WHERE author_name IS NOT NULL"
+                "  UNION"
+                "  SELECT author_name AS login FROM fato_commits WHERE author_name IS NOT NULL"
+                ") AS t"
+            )
+        ).fetchall()
+        github_logins = [r[0] for r in gh_rows]
+
+        log.info("dim_user: %d nomes Jira, %d logins GitHub.", len(jira_names), len(github_logins))
+
+        df_users = build_dim_user(jira_names, github_logins)
+        upsert(conn, dim_user, _df_to_records(df_users), ["user_key"])
 
 
 def run_jira(settings: Settings, since_days: int | None) -> None:
@@ -76,6 +114,7 @@ def run_github(settings: Settings, since_days: int | None) -> None:
 
     all_pulls_rows: list[dict] = []
     all_commits_rows: list[dict] = []
+    all_dim_pr_rows: list[dict] = []
 
     for repo in settings.github_repos:
         log.info("GitHub: processando repo %s", repo)
@@ -84,15 +123,19 @@ def run_github(settings: Settings, since_days: int | None) -> None:
 
         df_pulls = transform_pulls(enriched, repo)
         df_commits = transform_commits(enriched, repo)
+        df_dim_pr = transform_dim_pull_request(enriched, repo)
 
         if not df_pulls.empty:
             all_pulls_rows.extend(_df_to_records(df_pulls))
         if not df_commits.empty:
             all_commits_rows.extend(_df_to_records(df_commits))
+        if not df_dim_pr.empty:
+            all_dim_pr_rows.extend(_df_to_records(df_dim_pr))
 
     with get_connection(settings.database_url) as conn:
         upsert(conn, fato_pull_requests, all_pulls_rows, ["pr_id"])
         upsert(conn, fato_commits, all_commits_rows, ["commit_hash"])
+        upsert(conn, dim_pull_request, all_dim_pr_rows, ["pr_id"])
 
     log.info("=== ETL GitHub — fim ===")
 
@@ -108,5 +151,10 @@ def run(settings: Settings, mode: str, only: str) -> None:
 
     if only in ("github", "all"):
         run_github(settings, since_days)
+
+    if only == "all":
+        log.info("=== ETL dim_user — início ===")
+        _collect_and_load_dim_user(settings)
+        log.info("=== ETL dim_user — fim ===")
 
     log.info("Pipeline concluído.")
